@@ -1,3 +1,14 @@
+$provisionScript = <<-'PROVISION'
+set -euxo pipefail
+
+apt-get -y update
+DEBIAN_FRONTEND=noninteractive apt-get -y dist-upgrade
+DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends install ca-certificates curl gnupg jq
+
+dpkg -i /tmp/debian/flotsam*.deb
+usermod -aG flotsam vagrant
+PROVISION
+
 $script = <<-'SCRIPT'
 set -euxo pipefail
 
@@ -45,8 +56,8 @@ Vagrant.configure('2') do |config|
 
   config.vm.box = 'debian/bookworm64'
 
-  config.vm.provision 'file', source: deb_package_dir, destination: '/tmp/debian'
-  config.vm.provision 'shell', path: "#{workspace_dir}/tests/vagrant/common/provision.sh"
+  config.vm.provision 'file', source: 'flotsam_0.1.0_34724c5_amd64.deb', destination: '/tmp/debian/'
+  config.vm.provision 'shell', inline: $provisionScript
   config.vm.provision 'shell', inline: $script
 
   if File.file?('./docker-login.sh')
