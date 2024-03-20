@@ -46,7 +46,7 @@ jobs:
           summary: true
           
       - name: Upload Scout SARIF result
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: output.sarif
           category: scout
@@ -57,7 +57,7 @@ jobs:
           flotsam report redis:latest --full-summary --sca-report-in output.sarif.output --sca-report-out sca_out.sarif
 
       - name: Upload SARIF result (flotsam)
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: sca_out.sarif
           category: flotsam
