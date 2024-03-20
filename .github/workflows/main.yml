@@ -1,0 +1,39 @@
+name: Flotsam
+
+on:
+  push:
+    tags: [ "*" ]
+    branches:
+      - 'main'
+  pull_request:
+    branches: [ "**" ]
+  workflow_dispatch:
+    
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: docker.io
+  IMAGE_NAME: redis:latest
+  SHA: ${{ github.event.pull_request.head.sha || github.event.after }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+          
+      - name: Docker Scout
+        id: docker-scout
+        uses: docker/scout-action@dd36f5b0295baffa006aa6623371f226cc03e506
+        with:
+          command: cves
+          image: ${{ env.IMAGE_NAME }}
+          exit-code: true
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ env.SHA }}
+
+      - name: Install flotsam
+        run: |
+          apt install ./flotsam-0.1.0-34724c5.x86_64.rpm
