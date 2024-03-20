@@ -46,4 +46,4 @@ jobs:
 
       - name: Install flotsam
         run: |
-          apt install ./flotsam-0.1.0-34724c5.x86_64.rpm
+          apt install ./flotsam_0.1.0-34724c5_amd64.deb
