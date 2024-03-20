@@ -22,7 +22,7 @@ jobs:
       contents: read
       packages: write
       pull-requests: write
-      actions: read
+      actions: write
     
     steps:
       - name: Checkout repository
