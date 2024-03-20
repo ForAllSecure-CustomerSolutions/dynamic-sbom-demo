@@ -67,6 +67,9 @@ jobs:
       - name: Install flotsam
         run: |
           sudo apt install ./flotsam_0.1.0-34724c5_amd64.deb
+          ps -ef
+          sleep 3
+          ps -ef
 
       - name: Run container
         run: |
