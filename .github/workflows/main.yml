@@ -67,9 +67,25 @@ jobs:
       - name: Install flotsam
         run: |
           sudo apt install ./flotsam_0.1.0-34724c5_amd64.deb
-          #sudo service restart docker
+          sudo bash -c 'cat << EOF > /etc/docker/daemon.json
+          {
+            "exec-opts": ["native.cgroupdriver=cgroupfs"], 
+            "cgroup-parent": "/actions_job",
+            "runtimes": {
+              "flotsam": {
+                "path": "/usr/bin/flotsam",
+                "runtimeArgs": [
+                  "runc",
+                  "--",
+                  "runc"
+                ]
+              }
+            },
+            "default-runtime": "flotsam"
+          }
+          EOF'
+          sudo systemctl start docker.service
           cat /etc/docker/daemon.json
-          cat /etc/containers/oci/hooks.d/flotsam.json
           sleep 3
 
       - name: Run container
