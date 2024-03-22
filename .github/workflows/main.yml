@@ -63,13 +63,13 @@ jobs:
           jq 'walk(if type == "object" and has("startLine") and .startLine == 0 then .startLine = 1 else . end |
               if type == "object" and has("endLine") and .endLine == 0 then .endLine = 1 else . end |
               if type == "object" and has("endColumn") and .endColumn == 0 then .endColumn = 1 else . end |
-              if type == "object" and has("startColumn") and .startColumn == 0 then .startColumn = 1 else . end)' ${{ env.IMAGE_NAME }}-cves.sarif > ${{ env.IMAGE_NAME }}-cves.sarif
+              if type == "object" and has("startColumn") and .startColumn == 0 then .startColumn = 1 else . end)' ${{ env.IMAGE_NAME }}-cves.sarif > ${{ env.IMAGE_NAME }}-cves-patched.sarif
 
       - name: Upload Scout SARIF result
         uses: github/codeql-action/upload-sarif@v3
         continue-on-error: true
         with:
-          sarif_file: ${{ env.IMAGE_NAME }}-cves.sarif
+          sarif_file: ${{ env.IMAGE_NAME }}-cves-patched.sarif
           category: scout
 
       # Skip: installed on runner
@@ -107,9 +107,16 @@ jobs:
         run: |
           flotsam report ${{ env.IMAGE_NAME }} --sbom-report-source ${{ env.IMAGE_NAME }}-sbom.json --sca-report-source ${{ env.IMAGE_NAME }}-cves.sarif --sca-report-out ${{ env.IMAGE_NAME }}-cves-flotsam.sarif --sbom-report-out ${{ env.IMAGE_NAME }}-sbom-flotsam.json
 
+      - name: Patch docker scout SARIF report
+        run : |
+          jq 'walk(if type == "object" and has("startLine") and .startLine == 0 then .startLine = 1 else . end |
+              if type == "object" and has("endLine") and .endLine == 0 then .endLine = 1 else . end |
+              if type == "object" and has("endColumn") and .endColumn == 0 then .endColumn = 1 else . end |
+              if type == "object" and has("startColumn") and .startColumn == 0 then .startColumn = 1 else . end)' ${{ env.IMAGE_NAME }}-cves-flotsam.sarif > ${{ env.IMAGE_NAME }}-cves-flotsam-patched.sarif
+
       - name: Upload SARIF result (flotsam)
         uses: github/codeql-action/upload-sarif@v3
         continue-on-error: true
         with:
-          sarif_file: ${{ env.IMAGE_NAME }}-cves-flotsam.sarif
+          sarif_file: ${{ env.IMAGE_NAME }}-cves-flotsam-patched.sarif
           category: flotsam
