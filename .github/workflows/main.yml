@@ -41,14 +41,6 @@ jobs:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PAT }}
 
-      # - name: Docker Scout
-      #   id: docker-scout
-      #   continue-on-error: true
-      #   uses: docker/scout-action@v1
-      #   with:
-      #     command: cves,sbom
-      #     image: ${{ env.IMAGE_NAME }}
-      #     sarif-file: output.sarif
       - name: Install docker scout
         run: |
           curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh
@@ -69,32 +61,7 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ env.IMAGE_NAME }}-cves-patched.sarif
-          #category: scout
-
-      # Skip: installed on runner
-      # - name: Install flotsam
-      #   run: |
-      #     sudo apt install ./flotsam_0.1.0-34724c5_amd64.deb
-      #     sudo bash -c 'cat << EOF > /etc/docker/daemon.json
-      #     {
-      #       "exec-opts": ["native.cgroupdriver=cgroupfs"], 
-      #       "cgroup-parent": "/actions_job",
-      #       "runtimes": {
-      #         "flotsam": {
-      #           "path": "/usr/bin/flotsam",
-      #           "runtimeArgs": [
-      #             "runc",
-      #             "--",
-      #             "runc"
-      #           ]
-      #         }
-      #       },
-      #       "default-runtime": "flotsam"
-      #     }
-      #     EOF'
-      #     sudo systemctl start docker.service
-      #     cat /etc/docker/daemon.json
-      #     sleep 3
+          category: docker-scout-static
 
       - name: Run container
         run: |
@@ -117,4 +84,4 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ env.IMAGE_NAME }}-cves-flotsam-patched.sarif
-          #category: flotsam
+          category: docker-scout-runtime
