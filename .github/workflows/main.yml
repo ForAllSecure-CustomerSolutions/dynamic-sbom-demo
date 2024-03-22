@@ -35,7 +35,6 @@ jobs:
       # Login against a Docker registry except on PR
       # https://github.com/docker/login-action
       - name: Log into registry ${{ env.REGISTRY }}
-        continue-on-error: true
         uses: docker/login-action@v2.1.0
         with:
           registry: ${{ env.REGISTRY }}
@@ -68,10 +67,9 @@ jobs:
 
       - name: Upload Scout SARIF result
         uses: github/codeql-action/upload-sarif@v3
-        continue-on-error: true
         with:
           sarif_file: ${{ env.IMAGE_NAME }}-cves-patched.sarif
-          category: scout
+          #category: scout
 
       # Skip: installed on runner
       # - name: Install flotsam
@@ -117,7 +115,6 @@ jobs:
 
       - name: Upload SARIF result (flotsam)
         uses: github/codeql-action/upload-sarif@v3
-        continue-on-error: true
         with:
           sarif_file: ${{ env.IMAGE_NAME }}-cves-flotsam-patched.sarif
-          category: flotsam
+          #category: flotsam
