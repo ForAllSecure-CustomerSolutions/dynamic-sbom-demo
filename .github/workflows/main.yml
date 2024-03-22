@@ -57,7 +57,14 @@ jobs:
         run: |
           docker scout sbom --output ${{ env.IMAGE_NAME }}-sbom.json ${{ env.IMAGE_NAME }}
           docker scout cves --format sarif --output ${{ env.IMAGE_NAME }}-cves.sarif ${{ env.IMAGE_NAME }}
-          
+
+      - name: Patch docker scout SARIF report
+        run : |
+          jq 'walk(if type == "object" and has("startLine") and .startLine == 0 then .startLine = 1 else . end |
+              if type == "object" and has("endLine") and .endLine == 0 then .endLine = 1 else . end |
+              if type == "object" and has("endColumn") and .endColumn == 0 then .endColumn = 1 else . end |
+              if type == "object" and has("startColumn") and .startColumn == 0 then .startColumn = 1 else . end)' ${{ env.IMAGE_NAME }}-cves.sarif > ${{ env.IMAGE_NAME }}-cves.sarif
+
       - name: Upload Scout SARIF result
         uses: github/codeql-action/upload-sarif@v3
         continue-on-error: true
