@@ -45,49 +45,41 @@ jobs:
         run: |
           curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh
       
-      - name: Run docker scout
+      - name: Run docker scout to statically analyze container and produce a SCA and SBOM report
         run: |
           docker scout sbom --output ${{ env.IMAGE_NAME }}-sbom.json ${{ env.IMAGE_NAME }}
           docker scout cves --format sarif --output ${{ env.IMAGE_NAME }}-cves.sarif ${{ env.IMAGE_NAME }}
 
-      - name: Patch docker scout SARIF report
-        run : |
-          jq 'walk(if type == "object" and has("startLine") and .startLine == 0 then .startLine = 1 else . end |
-              if type == "object" and has("endLine") and .endLine == 0 then .endLine = 1 else . end |
-              if type == "object" and has("endColumn") and .endColumn == 0 then .endColumn = 1 else . end |
-              if type == "object" and has("startColumn") and .startColumn == 0 then .startColumn = 1 else . end)' ${{ env.IMAGE_NAME }}-cves.sarif > ${{ env.IMAGE_NAME }}-cves-patched.sarif
-
-      # - name: Upload Scout SARIF result
-      #   uses: github/codeql-action/upload-sarif@v3
-      #   with:
-      #     sarif_file: ${{ env.IMAGE_NAME }}-cves-patched.sarif
-      #     category: docker-scout-static
-
-      - name: Run container
+      - name: Run container to find out which components are used at runtime
         run: |
           container_id=$(docker run -q -d ${{ env.IMAGE_NAME }})
           sleep 5
           docker stop $container_id
 
-      - name: Run flotsam
+      - name: Run Dynamic SBOM to report on which CVEs are observed at runtime
         run: |
-          flotsam report ${{ env.IMAGE_NAME }} --sbom-report-source ${{ env.IMAGE_NAME }}-sbom.json --sca-report-source ${{ env.IMAGE_NAME }}-cves.sarif --sca-report-out ${{ env.IMAGE_NAME }}-cves-flotsam.sarif --sbom-report-out ${{ env.IMAGE_NAME }}-sbom-flotsam.json
+          flotsam report ${{ env.IMAGE_NAME }} --sbom-report-source ${{ env.IMAGE_NAME }}-sbom.json \
+                                               --sca-report-source ${{ env.IMAGE_NAME }}-cves.sarif \
+                                               --sca-report-out ${{ env.IMAGE_NAME }}-cves-flotsam.sarif \
+                                               --sbom-report-out ${{ env.IMAGE_NAME }}-sbom-flotsam.json \
+                                               --sca-summary-csv ${{ env.IMAGE_NAME }}-report.csv
+          cat ${{ env.IMAGE_NAME }}-report.csv
 
-      - name: Patch docker scout SARIF report
+      - name: Patch docker scout SARIF report for CodeQL
         run : |
           jq 'walk(if type == "object" and has("startLine") and .startLine == 0 then .startLine = 1 else . end |
               if type == "object" and has("endLine") and .endLine == 0 then .endLine = 1 else . end |
               if type == "object" and has("endColumn") and .endColumn == 0 then .endColumn = 1 else . end |
               if type == "object" and has("startColumn") and .startColumn == 0 then .startColumn = 1 else . end)' ${{ env.IMAGE_NAME }}-cves-flotsam.sarif > ${{ env.IMAGE_NAME }}-cves-flotsam-patched.sarif
 
-      - name: Upload SARIF result (flotsam)
+      - name: Upload SARIF to Github Advanced Security
         id: upload
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ env.IMAGE_NAME }}-cves-flotsam-patched.sarif
           category: docker-scout-runtime
 
-      - name: Dismiss alerts
+      - name: Dismiss issues that were not observed at runtime
         uses: advanced-security/dismiss-alerts@v1
         with:
           # specify a 'sarif-id' and 'sarif-file'
