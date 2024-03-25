@@ -63,7 +63,11 @@ jobs:
                                                --sca-report-out ${{ env.IMAGE_NAME }}-cves-flotsam.sarif \
                                                --sbom-report-out ${{ env.IMAGE_NAME }}-sbom-flotsam.json \
                                                --sca-summary-csv ${{ env.IMAGE_NAME }}-report.csv
-          cat ${{ env.IMAGE_NAME }}-report.csv
+      
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.IMAGE_NAME }}-artifacts
+          path: ${{ env.IMAGE_NAME }}-*
 
       - name: Patch docker scout SARIF report for CodeQL
         run : |
