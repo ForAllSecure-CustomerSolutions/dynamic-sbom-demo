@@ -14,7 +14,7 @@ env:
   REGISTRY: docker.io
   IMAGE_NAME: postgres
   IMAGE_VERSION: latest
-  IMAGE: ${{ env.IMAGE_NAME }}:${{ IMAGE_VERSION }}
+  IMAGE: ${{ IMAGE_NAME }}:${{ IMAGE_VERSION }}
   SHA: ${{ github.event.pull_request.head.sha || github.event.after }}
 
 jobs:
