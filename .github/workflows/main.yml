@@ -52,13 +52,13 @@ jobs:
           docker scout sbom --output ${{ env.IMAGE_NAME }}-sbom.json ${{ env.IMAGE }}
           docker scout cves --format sarif --output ${{ env.IMAGE_NAME }}-cves.sarif ${{ env.IMAGE }}
 
-      - name: Run container to find out which components are used at runtime
+      - name: Run container to find out which components are used at runtime (Dynamic SBOM is plugged into the runtime)
         run: |
           container_id=$(docker run -q -d ${{ env.IMAGE }})
           sleep 5
           docker stop $container_id
 
-      - name: Run Dynamic SBOM to report on which CVEs are observed at runtime
+      - name: Run Dynamic SBOM to report on which CVEs were observed at runtime
         run: |
           flotsam report ${{ env.IMAGE }} --sbom-report-source ${{ env.IMAGE_NAME }}-sbom.json \
                                           --sca-report-source ${{ env.IMAGE_NAME }}-cves.sarif \
