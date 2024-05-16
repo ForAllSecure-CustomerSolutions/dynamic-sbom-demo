@@ -36,16 +36,18 @@ jobs:
     
       # Login against a Docker registry except on PR
       # https://github.com/docker/login-action
-      - name: Log into registry ${{ env.REGISTRY }}
-        uses: docker/login-action@v2.1.0
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_PAT }}
+      # VL: ignore, our runner is logged in
+      # - name: Log into registry ${{ env.REGISTRY }}
+      #   uses: docker/login-action@v2.1.0
+      #   with:
+      #     registry: ${{ env.REGISTRY }}
+      #     username: ${{ secrets.DOCKER_USER }}
+      #     password: ${{ secrets.DOCKER_PAT }}
 
-      - name: Install docker scout
-        run: |
-          curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh
+      # Ignore: our runner has Scout / Anchore
+      # - name: Install docker scout
+      #   run: |
+      #     curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh
 
       - name: Run container to find out which components are used at runtime (Dynamic SBOM is plugged into the runtime)
         run: |
