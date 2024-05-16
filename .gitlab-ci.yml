@@ -1,6 +1,6 @@
 variables:
-  IMAGE_NAME: "postgres"
-  IMAGE: "postgres:latest"
+  IMAGE_NAME: "redis"
+  IMAGE: "redis:latest"
 
 stages:
   - test
