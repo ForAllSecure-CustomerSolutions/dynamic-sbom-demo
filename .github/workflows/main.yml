@@ -12,9 +12,9 @@ on:
 env:
   # Use docker.io for Docker Hub if empty
   REGISTRY: docker.io
-  IMAGE_NAME: postgres
+  IMAGE_NAME: redis
   IMAGE_VERSION: latest
-  IMAGE: postgres:latest
+  IMAGE: redis:latest
   SHA: ${{ github.event.pull_request.head.sha || github.event.after }}
 
 jobs:
@@ -55,8 +55,9 @@ jobs:
 
       - name: Run Dynamic SBOM to report on which CVEs were observed at runtime
         run: |
-          mdsbom scout ${{ env.IMAGE }} --sca-report-out ${{ env.IMAGE_NAME }}-cves-mdsbom.sarif \
-                                         --sca-summary-csv ${{ env.IMAGE_NAME }}-report.csv --local
+          mdsbom anchore ${{ env.IMAGE }} --sca-report-out ${{ env.IMAGE_NAME }}-cves-mdsbom.sarif \
+                                         --sca-summary-csv ${{ env.IMAGE_NAME }}-report.csv \
+                                         --workspace forallsecure-demo
       
       - uses: actions/upload-artifact@v4
         with:
