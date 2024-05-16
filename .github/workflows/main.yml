@@ -55,7 +55,7 @@ jobs:
 
       - name: Run Dynamic SBOM to report on which CVEs were observed at runtime
         run: |
-          mdsbom anchore ${{ env.IMAGE }} --sca-report-out ${{ env.IMAGE_NAME }}-cves-mdsbom.sarif \
+          mdsbom scout ${{ env.IMAGE }} --sca-report-out ${{ env.IMAGE_NAME }}-cves-mdsbom.sarif \
                                          --sca-summary-csv ${{ env.IMAGE_NAME }}-report.csv \
                                          --workspace forallsecure-demo
       
