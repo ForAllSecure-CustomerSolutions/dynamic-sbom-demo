@@ -33,21 +33,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ env.SHA }}
-    
-      # Login against a Docker registry except on PR
-      # https://github.com/docker/login-action
-      # VL: ignore, our runner is logged in
-      # - name: Log into registry ${{ env.REGISTRY }}
-      #   uses: docker/login-action@v2.1.0
-      #   with:
-      #     registry: ${{ env.REGISTRY }}
-      #     username: ${{ secrets.DOCKER_USER }}
-      #     password: ${{ secrets.DOCKER_PAT }}
-
-      # Ignore: our runner has Scout / Anchore
-      # - name: Install docker scout
-      #   run: |
-      #     curl -fsSL https://raw.githubusercontent.com/docker/scout-cli/main/install.sh | sh
 
       - name: Run container to find out which components are used at runtime (Dynamic SBOM is plugged into the runtime)
         run: |
@@ -57,27 +42,20 @@ jobs:
 
       - name: Run Dynamic SBOM to report on which CVEs were observed at runtime
         run: |
-          mdsbom scout ${{ env.IMAGE }} --sca-report-out ${{ env.IMAGE_NAME }}-cves-mdsbom.sarif \
-                                         --sca-summary-csv ${{ env.IMAGE_NAME }}-report.csv \
-                                         --workspace forallsecure-demo
-      
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.IMAGE_NAME }}-artifacts
-          path: ${{ env.IMAGE_NAME }}-*
+          mdsbom scout ${{ env.IMAGE }} --sca-report-out cves.sarif --sca-summary-csv sbom.json --workspace forallsecure-demo
 
       - name: Patch docker scout SARIF report for CodeQL
         run : |
           jq 'walk(if type == "object" and has("startLine") and .startLine == 0 then .startLine = 1 else . end |
               if type == "object" and has("endLine") and .endLine == 0 then .endLine = 1 else . end |
               if type == "object" and has("endColumn") and .endColumn == 0 then .endColumn = 1 else . end |
-              if type == "object" and has("startColumn") and .startColumn == 0 then .startColumn = 1 else . end)' ${{ env.IMAGE_NAME }}-cves-mdsbom.sarif > ${{ env.IMAGE_NAME }}-cves-mdsbom-patched.sarif
+              if type == "object" and has("startColumn") and .startColumn == 0 then .startColumn = 1 else . end)' cves.sarif > cves-patched.sarif
 
       - name: Upload SARIF to Github Advanced Security
         id: upload
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: ${{ env.IMAGE_NAME }}-cves-mdsbom-patched.sarif
+          sarif_file: cves-patched.sarif
           category: docker-scout-runtime
 
       - name: Dismiss issues that were not observed at runtime
@@ -85,6 +63,6 @@ jobs:
         with:
           # specify a 'sarif-id' and 'sarif-file'
           sarif-id: ${{ steps.upload.outputs.sarif-id }}
-          sarif-file: ${{ env.IMAGE_NAME }}-cves-mdsbom-patched.sarif
+          sarif-file: cves-patched.sarif
         env:
           GITHUB_TOKEN: ${{ github.token }} 
