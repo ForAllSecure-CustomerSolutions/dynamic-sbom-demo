@@ -12,9 +12,9 @@ on:
 env:
   # Use docker.io for Docker Hub if empty
   REGISTRY: docker.io
-  IMAGE_NAME: redis
+  IMAGE_NAME: forallsecuredevbot/redis
   IMAGE_VERSION: latest
-  IMAGE: redis:latest
+  IMAGE: forallsecuredevbot/redis:latest
   SHA: ${{ github.event.pull_request.head.sha || github.event.after }}
 
 jobs:
