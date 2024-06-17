@@ -43,6 +43,9 @@ jobs:
       - name: Install mdsbom
         run: curl -sSL https://app.mayhem.security/cli/mdsbom/linux/latest/mdsbom.deb -O && sudo dpkg -i mdsbom.deb && sudo usermod -aG mdsbom $USER
 
+      - name: MDSBOM login
+        run: mdsbom login https://app.mayhem.security  ${{ secrets.MAYHEM_TOKEN }}
+
       - name: Run container to find out which components are used at runtime (Dynamic SBOM is plugged into the runtime)
         run: |
           container_id=$(docker run -q -d ${{ env.IMAGE }})
