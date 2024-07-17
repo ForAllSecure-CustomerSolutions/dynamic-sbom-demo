@@ -1,0 +1,13 @@
+{
+    "runtimes": {
+      "mdsbom": {
+        "path": "/usr/bin/mdsbom",
+        "runtimeArgs": [
+          "runc",
+          "--",
+          "runc"
+        ]
+      }
+    },
+    "default-runtime": "mdsbom"
+  }
