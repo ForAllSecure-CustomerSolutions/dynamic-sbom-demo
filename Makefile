@@ -27,6 +27,7 @@ anchore:
 # Generate an report based off of scout
 scout:
 	# docker exec -it $(CONTAINER_NAME) mdsbom scout --full-summary $(SCANNED_IMAGE)
+	# Running docker scout separately seems to work better, but still isn't great
 	docker exec -it $(CONTAINER_NAME) docker scout sbom --format spdx --output scout-sbom.json $(SCANNED_IMAGE)
 	docker exec -it $(CONTAINER_NAME) mdsbom report --full-summary --sbom-report-source scout-sbom.json redis:7.4-rc-bookworm
 
